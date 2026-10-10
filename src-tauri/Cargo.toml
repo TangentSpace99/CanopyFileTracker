@@ -1,0 +1,22 @@
+[package]
+name = "canopy"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+authors = ["Dr.-Ing. Axel Schild"]
+description = "Canopy: instant disk usage, kept current by diffs"
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+rfd = { version = "0.15", default-features = false }
+canopy-core = { path = "../crates/core" }
+
+[features]
+# Always serve the bundled UI, so a plain `cargo build` yields a working app.
+default = ["custom-protocol"]
+custom-protocol = ["tauri/custom-protocol"]
