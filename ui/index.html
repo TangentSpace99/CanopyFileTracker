@@ -1,0 +1,145 @@
+<!doctype html>
+<!--
+  Copyright (c) 2026 Dr.-Ing. Axel Schild
+  SPDX-License-Identifier: MIT
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Canopy</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="app">
+  <aside id="sidebar">
+    <div class="brand">
+      <svg viewBox="0 0 32 32" width="26" height="26" aria-hidden="true">
+        <rect x="1" y="1" width="30" height="30" rx="8" fill="#161d27"/>
+        <rect x="6" y="6" width="11" height="20" rx="2.5" fill="#34d399"/>
+        <rect x="19" y="6" width="7" height="11" rx="2.2" fill="#60a5fa"/>
+        <rect x="19" y="19" width="7" height="7" rx="2.2" fill="#fbbf24"/>
+      </svg>
+      <span>Canopy</span>
+    </div>
+
+    <div class="side-scroll">
+      <div class="side-section" id="roots-section">
+        <h4>Indexed</h4>
+        <div id="roots"></div>
+      </div>
+      <div class="side-section">
+        <h4>This PC</h4>
+        <div id="drives"></div>
+      </div>
+    </div>
+
+    <button id="add-folder" class="ghost wide">
+      <svg viewBox="0 0 16 16" width="14" height="14"><path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      Index a folder…
+    </button>
+    <div id="side-foot"></div>
+  </aside>
+
+  <main>
+    <header id="topbar">
+      <button id="up" class="icon" title="Up one level (Backspace)">
+        <svg viewBox="0 0 16 16" width="15" height="15"><path d="M8 13V3M3.5 7.5 8 3l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <nav id="crumbs"></nav>
+      <div class="search">
+        <svg viewBox="0 0 16 16" width="14" height="14"><circle cx="7" cy="7" r="4.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="m10.5 10.5 3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        <input id="search" type="text" placeholder="Search the index" spellcheck="false" autocomplete="off">
+        <kbd>Ctrl F</kbd>
+      </div>
+      <div class="seg" id="metric" title="Logical file size, or space actually allocated on disk">
+        <button data-m="size" class="on">Size</button>
+        <button data-m="alloc">On disk</button>
+      </div>
+      <div class="split">
+        <button id="refresh" class="primary" title="Refresh (F5)">
+          <svg class="spin-ico" viewBox="0 0 16 16" width="14" height="14"><path d="M13.5 8a5.5 5.5 0 1 1-1.6-3.9M13.5 2.5v3h-3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span id="refresh-label">Refresh</span>
+        </button>
+        <button id="refresh-more" class="primary caret" title="More">
+          <svg viewBox="0 0 16 16" width="12" height="12"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <div id="browse" hidden>
+      <div id="tabs">
+        <button class="tab on" data-tab="folders">Folders</button>
+        <button class="tab" data-tab="files">Largest files</button>
+        <button class="tab" data-tab="types">File types</button>
+        <button class="tab" data-tab="changes">Changes<span id="changes-badge" class="badge" hidden></span></button>
+        <div class="spacer"></div>
+        <label class="baseline" title="Folder sizes are compared with this point in the index history">
+          Compare with
+          <select id="baseline"></select>
+        </label>
+      </div>
+
+      <section id="view-folders" class="view">
+        <div id="tree-wrap">
+          <div id="tree-head" class="grid">
+            <div data-sort="name">Name</div>
+            <div data-sort="size">Share of parent</div>
+            <div data-sort="size" class="num">Size</div>
+            <div data-sort="files" class="num">Files</div>
+            <div data-sort="mtime" class="num">Modified</div>
+            <div data-sort="delta" class="num">Change</div>
+          </div>
+          <div id="tree-scroll" tabindex="0">
+            <div id="tree-spacer"></div>
+            <div id="tree-rows"></div>
+          </div>
+        </div>
+        <div id="splitter"></div>
+        <div id="map-wrap">
+          <canvas id="map"></canvas>
+          <canvas id="map-hi"></canvas>
+          <div id="map-empty" hidden>This folder is empty.</div>
+        </div>
+      </section>
+
+      <section id="view-files" class="view list-view" hidden></section>
+      <section id="view-types" class="view list-view" hidden></section>
+      <section id="view-changes" class="view list-view" hidden></section>
+      <section id="view-search" class="view list-view" hidden></section>
+    </div>
+
+    <section id="welcome" hidden>
+      <div class="hero">
+        <h1>See where your disk space went.</h1>
+        <p>Pick a drive. Canopy indexes it once, then keeps the index current by reading only what changed, so every later look is instant.</p>
+        <div id="welcome-drives"></div>
+        <button id="welcome-folder" class="ghost">Or choose a folder…</button>
+      </div>
+    </section>
+
+    <section id="scanning" hidden>
+      <div class="scan-card">
+        <div class="ring"><i></i></div>
+        <h2 id="scan-title">Indexing</h2>
+        <div class="scan-stats">
+          <div><b id="scan-files">0</b><span>files</span></div>
+          <div><b id="scan-dirs">0</b><span>folders</span></div>
+          <div><b id="scan-bytes">0 B</b><span>found</span></div>
+          <div><b id="scan-rate">0</b><span>files / s</span></div>
+        </div>
+        <div id="scan-path"></div>
+        <button id="scan-cancel" class="ghost">Cancel</button>
+      </div>
+    </section>
+
+    <footer id="status"><span id="status-left"></span><span class="spacer"></span><span id="status-right"></span></footer>
+  </main>
+</div>
+
+<div id="tip" hidden></div>
+<div id="menu" hidden></div>
+<div id="toasts"></div>
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
