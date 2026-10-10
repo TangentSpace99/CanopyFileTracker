@@ -1,0 +1,16 @@
+[package]
+name = "canopy-core"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+authors = ["Dr.-Ing. Axel Schild"]
+description = "Canopy engine: parallel NTFS walker, SQLite index and USN-journal diffing"
+
+[dependencies]
+rusqlite = { version = "0.32", features = ["bundled"] }
+crossbeam-channel = "0.5"
+serde = { version = "1", features = ["derive"] }
+
+[[bin]]
+name = "canopy-cli"
+path = "src/bin/cli.rs"
